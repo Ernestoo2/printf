@@ -1,14 +1,21 @@
 #include "main.h"
 #include <stdarg.h>
 #include <stddef.h>
-int _printf (const char * const format, ...)
+/**
+ * _printf - is a function that selects the correct function to print.
+ * @format: identifier to look for.
+ * Return: the length of the string.
+ */
+int _printf(const char * const format, ...)
 {
 	va_list args;
 	int i = 0, k = 0, num = 0;
 	int n_displayed = 0;
 	char *str = NULL;
-
-	va_start (args, format);
+	int (*func)(va_list);
+	int count;
+	
+	va_start(args, format);
 
 	while (format[i] != '\0')
 	{
@@ -19,34 +26,18 @@ int _printf (const char * const format, ...)
 		}
 		else
 		{
-		    if (format[i + 1] == 'c')
-		    {
-			_print_char(va_arg(args, int));
-			n_displayed++;
-			i++;
+			func = _select_func(format[i + 1]);
+			if (func != NULL)
+			{
+				n_displayed += func(args);
+				n_displayed++;
+				i++;
+			}
 		}
-		    else if (format[i + 1] == 's')
-		    {
-			    i++;
-			    _print_str(args);
-		    }
-		    else if (format[i + 1] == '%')
-		    {
-			    i++;
-			    _putchar('%');
-			    n_displayed++;
-		    }
-		    else if (format[i + 1] == 'd')
-		    {
-			    i++;
-			    _print_int (va_arg(args, int));
-		    }
-		}
-
 		i++;
 	}
 
-	va_end (args);
+	va_end(args);
 
 	return (n_displayed);
 }
