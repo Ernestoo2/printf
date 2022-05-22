@@ -1,43 +1,49 @@
 #include "main.h"
-#include <stdarg.h>
-#include <stddef.h>
+
 /**
- * _printf - is a function that selects the correct function to print.
- * @format: identifier to look for.
- * Return: the length of the string.
+ * _printf - prints anything
+ * @format: the format string
+ *
+ * Return: number of bytes printed
  */
-int _printf(const char * const format, ...)
+int _printf(const char *format, ...)
 {
-	va_list args;
-	int i = 0, k = 0, num = 0;
-	int n_displayed = 0;
-	char *str = NULL;
-	int (*func)(va_list);
-	int count;
-	
-	va_start(args, format);
+	int sum = 0;
+	va_list ap;
+	char *p, *start;
+	params_t params = PARAMS_INIT;
 
-	while (format[i] != '\0')
+	va_start(ap, format);
+
+	if (!format || (format[0] == '%' && !format[1]))
+		return (-1);
+	if (format[0] == '%' && format[1] == ' ' && !format[2])
+		return (-1);
+	for (p = (char *)format; *p; p++)
 	{
-		if (format[i] != '%')
+		init_params(&params, ap);
+		if (*p != '%')
 		{
-			_putchar(format[i]);
-			n_displayed++;
+			sum += _putchar(*p);
+			continue;
 		}
+		start = p;
+		p++;
+		while (get_flag(p, &params)) /* while char at p is flag char */
+		{
+			p++; /* next char */
+		}
+		p = get_width(p, &params, ap);
+		p = get_precision(p, &params, ap);
+		if (get_modifier(p, &params))
+			p++;
+		if (!get_specifier(p))
+			sum += print_from_to(start, p,
+				params.l_modifier || params.h_modifier ? p - 1 : 0);
 		else
-		{
-			func = _select_func(format[i + 1]);
-			if (func != NULL)
-			{
-				n_displayed += func(args);
-				n_displayed++;
-				i++;
-			}
-		}
-		i++;
+			sum += get_print_func(p, ap, &params);
 	}
-
-	va_end(args);
-
-	return (n_displayed);
+	_putchar(BUF_FLUSH);
+	va_end(ap);
+	return (sum);
 }
